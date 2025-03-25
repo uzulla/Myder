@@ -32,7 +32,7 @@ Bind mountする都合上、以下指定を追加したほうがよいかもし�
    make pull
    ```
 
-3. 都度環境変数 `OPENROUTER_API_KEY` を設定するか、`.env`ファイルをプロジェクトルートに作成し、OpenRouterのAPIキーを設定します：
+3. 都度環境変数 `OPENROUTER_API_KEY` を設定するか、`.env`ファイルをcloneしたDirectoryに作成し、OpenRouterのAPIキーを設定します：
    ```env
    OPENROUTER_API_KEY=your_api_key_here
    ```
