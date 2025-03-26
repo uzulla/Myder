@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}ホーム - Twitter Clone{% endblock %}
+
+{% block content %}
+    <h2>新しいツイートを投稿</h2>
+    <form method="post">
+        <div>
+            <label for="username">ユーザー名:</label><br>
+            <input type="text" id="username" name="username" value="名無しさん">
+        </div>
+        <div>
+            <label for="content">内容 (280文字まで):</label><br>
+            <textarea id="content" name="content" rows="3" maxlength="280" required></textarea>
+        </div>
+        <button type="submit">ツイート</button>
+    </form>
+
+    <hr>
+
+    <h2>タイムライン</h2>
+    {% if tweets %}
+        {% for tweet in tweets %}
+            <div class="tweet">
+                <div class="username">{{ tweet.username }}</div>
+                <div class="content">{{ tweet.content }}</div>
+                <div class="timestamp">{{ tweet.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>まだツイートはありません。</p>
+    {% endif %}
+{% endblock %}

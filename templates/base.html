@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Twitter Clone{% endblock %}</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .tweet { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .tweet .username { font-weight: bold; }
+        .tweet .content { margin-top: 5px; }
+        .tweet .timestamp { font-size: 0.8em; color: #888; margin-top: 5px; }
+        textarea { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        input[type="text"] { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1><a href="{{ url_for('index') }}">Twitter Clone</a></h1>
+    <hr>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
