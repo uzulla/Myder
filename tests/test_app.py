@@ -50,8 +50,8 @@ def test_index_get(client):
     response = client.get('/')
     assert response.status_code == 200
     assert b"Twitter Clone" in response.data
-    assert b"新しいツイートを投稿" in response.data
-    assert b"タイムライン" in response.data
+    assert "新しいツイートを投稿".encode('utf-8') in response.data
+    assert "タイムライン".encode('utf-8') in response.data
 
 
 def test_index_post_tweet(client, app):
