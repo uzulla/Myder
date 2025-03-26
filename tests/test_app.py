@@ -74,9 +74,9 @@ def test_index_get_logged_out(client):
     response = client.get('/')
     assert response.status_code == 200
     assert b"Twitter Clone" in response.data
-    assert b"ログイン" in response.data # ログインリンクがある
-    assert b"登録" in response.data   # 登録リンクがある
-    assert b"新しいツイートを投稿" not in response.data # 投稿フォームはない
+    assert "ログイン".encode('utf-8') in response.data # ログインリンクがある
+    assert "登録".encode('utf-8') in response.data   # 登録リンクがある
+    assert "新しいツイートを投稿".encode('utf-8') not in response.data # 投稿フォームはない
     assert "タイムライン".encode('utf-8') in response.data
 
 def test_index_get_logged_in(client, app):
@@ -90,10 +90,10 @@ def test_index_get_logged_in(client, app):
     response = client.get('/')
     assert response.status_code == 200
     assert b"Twitter Clone" in response.data
-    assert b"こんにちは, testuser さん" in response.data # ユーザー名が表示される
-    assert b"ログアウト" in response.data # ログアウトリンクがある
-    assert b"ログイン" not in response.data # ログインリンクはない
-    assert b"登録" not in response.data   # 登録リンクはない
+    assert "こんにちは, testuser さん".encode('utf-8') in response.data # ユーザー名が表示される
+    assert "ログアウト".encode('utf-8') in response.data # ログアウトリンクがある
+    assert "ログイン".encode('utf-8') not in response.data # ログインリンクはない
+    assert "登録".encode('utf-8') not in response.data   # 登録リンクはない
     assert "新しいツイートを投稿".encode('utf-8') in response.data # 投稿フォームがある
     assert "タイムライン".encode('utf-8') in response.data
 
@@ -110,7 +110,7 @@ def test_post_tweet_logged_in(client, app):
     response = client.post('/', data={'content': test_content}, follow_redirects=True)
 
     assert response.status_code == 200
-    assert b'ツイートが投稿されました！' in response.data # フラッシュメッセージ
+    assert 'ツイートが投稿されました！'.encode('utf-8') in response.data # フラッシュメッセージ
     assert bytes(test_content, 'utf-8') in response.data # 投稿内容が表示される
     assert b'testuser' in response.data # 投稿者名が表示される
 
@@ -127,8 +127,8 @@ def test_post_tweet_logged_out(client, app):
     """
     response = client.post('/', data={'content': 'Trying to tweet while logged out'}, follow_redirects=True)
     assert response.status_code == 200
-    assert b'ツイートするにはログインが必要です。' in response.data # フラッシュメッセージ
-    assert b'ログイン' in response.data # ログインページのタイトル
+    assert 'ツイートするにはログインが必要です。'.encode('utf-8') in response.data # フラッシュメッセージ
+    assert 'ログイン'.encode('utf-8') in response.data # ログインページのタイトル
     assert b'Trying to tweet while logged out' not in response.data # ツイート内容は表示されない
 
     # DBに保存されていないことを確認
@@ -147,7 +147,7 @@ def test_post_empty_tweet_logged_in(client, app):
     response = client.post('/', data={'content': ''}, follow_redirects=True)
 
     assert response.status_code == 200
-    assert b'ツイート内容を入力してください。' in response.data # フラッシュメッセージ
+    assert 'ツイート内容を入力してください。'.encode('utf-8') in response.data # フラッシュメッセージ
     assert b'<div class="tweet">' not in response.data # ツイートは表示されない
 
     # DBにも保存されていないことを確認
@@ -162,13 +162,13 @@ def test_register(client, app):
     # GETリクエスト
     response = client.get('/register')
     assert response.status_code == 200
-    assert b'ユーザー登録' in response.data
+    assert 'ユーザー登録'.encode('utf-8') in response.data
 
     # POSTリクエスト (成功)
     response = register(client, 'newuser', 'new@example.com', 'password', 'password')
     assert response.status_code == 200
-    assert b'登録が完了しました。ログインしてください。' in response.data
-    assert b'ログイン' in response.data # ログインページにリダイレクトされている
+    assert '登録が完了しました。ログインしてください。'.encode('utf-8') in response.data
+    assert 'ログイン'.encode('utf-8') in response.data # ログインページにリダイレクトされている
 
     # DBにユーザーが作成されたか確認
     with app.app_context():
@@ -184,21 +184,21 @@ def test_register_existing_user(client, app):
     # 同じユーザー名で登録
     response = register(client, 'testuser', 'other@example.com', 'password', 'password')
     assert response.status_code == 200
-    assert b"ユーザー名 &#39;testuser&#39; は既に使用されています。" in response.data # HTMLエンコードされた '
-    assert b'ユーザー登録' in response.data # 登録ページにとどまる
+    assert "ユーザー名 &#39;testuser&#39; は既に使用されています。".encode('utf-8') in response.data # HTMLエンコードされた '
+    assert 'ユーザー登録'.encode('utf-8') in response.data # 登録ページにとどまる
 
     # 同じEmailで登録
     response = register(client, 'anotheruser', 'test@example.com', 'password', 'password')
     assert response.status_code == 200
-    assert b"メールアドレス &#39;test@example.com&#39; は既に使用されています。" in response.data
-    assert b'ユーザー登録' in response.data
+    assert "メールアドレス &#39;test@example.com&#39; は既に使用されています。".encode('utf-8') in response.data
+    assert 'ユーザー登録'.encode('utf-8') in response.data
 
 def test_register_password_mismatch(client):
     """パスワード不一致での登録失敗テスト"""
     response = register(client, 'testuser', 'test@example.com', 'pass1', 'pass2')
     assert response.status_code == 200
-    assert b'パスワードが一致しません。' in response.data
-    assert b'ユーザー登録' in response.data
+    assert 'パスワードが一致しません。'.encode('utf-8') in response.data
+    assert 'ユーザー登録'.encode('utf-8') in response.data
 
 def test_login_logout(client, app):
     """ログインとログアウトのテスト"""
@@ -208,30 +208,31 @@ def test_login_logout(client, app):
     # GET ログインページ
     response = client.get('/login')
     assert response.status_code == 200
-    assert b'ログイン' in response.data
+    assert 'ログイン'.encode('utf-8') in response.data
 
     # POST ログイン (成功)
     response = login(client, 'loginuser', 'mypassword')
     assert response.status_code == 200
-    assert b'loginuserとしてログインしました。' in response.data
-    assert b'こんにちは, loginuser さん' in response.data # トップページにリダイレクトされている
+    assert 'loginuserとしてログインしました。'.encode('utf-8') in response.data
+    assert 'こんにちは, loginuser さん'.encode('utf-8') in response.data # トップページにリダイレクトされている
 
     # ログイン状態で /login にアクセスするとリダイレクト
     response = client.get('/login', follow_redirects=True)
     assert response.status_code == 200
-    assert b'こんにちは, loginuser さん' in response.data # トップページにいる
+    assert 'こんにちは, loginuser さん'.encode('utf-8') in response.data # トップページにいる
 
     # ログアウト
     response = logout(client)
     assert response.status_code == 200
-    assert b'ログアウトしました。' in response.data
-    assert b'ログイン' in response.data # トップページにリダイレクトされ、ログインリンクがある
+    assert 'ログアウトしました。'.encode('utf-8') in response.data
+    assert 'ログイン'.encode('utf-8') in response.data # トップページにリダイレクトされ、ログインリンクがある
 
     # ログアウト状態で /logout にアクセスするとログインページへリダイレクト
     response = client.get('/logout', follow_redirects=True)
     assert response.status_code == 200
-    assert b'ログインしてください' in response.data # Flask-Login のデフォルトメッセージ (変更可能)
-    assert b'ログイン' in response.data # ログインページにいる
+    # Flask-Login のデフォルトメッセージは英語なのでバイトリテラルでOK
+    assert b'Please log in to access this page.' in response.data
+    assert 'ログイン'.encode('utf-8') in response.data # ログインページにいる
 
 def test_login_invalid_credentials(client, app):
     """無効な認証情報でのログイン失敗テスト"""
@@ -240,11 +241,11 @@ def test_login_invalid_credentials(client, app):
     # 間違ったパスワード
     response = login(client, 'testuser', 'wrongpassword')
     assert response.status_code == 200
-    assert b'ユーザー名またはパスワードが無効です。' in response.data
-    assert b'ログイン' in response.data # ログインページにとどまる
+    assert 'ユーザー名またはパスワードが無効です。'.encode('utf-8') in response.data
+    assert 'ログイン'.encode('utf-8') in response.data # ログインページにとどまる
 
     # 存在しないユーザー
     response = login(client, 'nosuchuser', 'password')
     assert response.status_code == 200
-    assert b'ユーザー名またはパスワードが無効です。' in response.data
-    assert b'ログイン' in response.data
+    assert 'ユーザー名またはパスワードが無効です。'.encode('utf-8') in response.data
+    assert 'ログイン'.encode('utf-8') in response.data
