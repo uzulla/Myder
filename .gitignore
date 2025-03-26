@@ -1,3 +1,4 @@
 .env
 .aider.*
 tmp/
+.aider*
