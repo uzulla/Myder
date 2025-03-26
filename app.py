@@ -48,11 +48,21 @@ def index():
             return redirect(url_for('index')) # 投稿後はリダイレクト
         else:
             flash('ツイート内容を入力してください。', 'danger')
+            # エラーがあってもフォームは再表示されるべきなのでリダイレクトしない
+            # return redirect(url_for('index')) # この行は不要
 
-    # GETリクエストの場合、または投稿後にツイート一覧を表示
-    # Tweetモデルのauthorリレーションを効率的に読み込むために joinedload を使用
-    from sqlalchemy.orm import joinedload
-    tweets = Tweet.query.options(joinedload(Tweet.author)).order_by(Tweet.created_at.desc()).all()
+    # --- タイムラインに表示するツイートの取得 ---
+    tweets = []
+    if current_user.is_authenticated:
+        # ログインしている場合: フォローしているユーザーと自分のツイートを取得
+        # joinedload は followed_posts 内で Tweet を取得する際に適用できないため、
+        # ここで再度適用するか、N+1問題を許容するか、別の方法を検討する必要がある。
+        # ここではシンプルに User.followed_posts() を使う。
+        tweets = current_user.followed_posts().all()
+    # else:
+        # ログインしていない場合: 何も表示しない (もしくは最新の公開ツイートを少数表示するなど)
+        # pass # tweets は空リストのまま
+
     return render_template('index.html', tweets=tweets)
 
 

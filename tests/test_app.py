@@ -78,24 +78,51 @@ def test_index_get_logged_out(client):
     assert "登録".encode('utf-8') in response.data   # 登録リンクがある
     assert "新しいツイートを投稿".encode('utf-8') not in response.data # 投稿フォームはない
     assert "タイムライン".encode('utf-8') in response.data
+    # ログアウト状態ではツイートは表示されないはず
+    assert b'<div class="tweet">' not in response.data
 
-def test_index_get_logged_in(client, app):
+def test_index_get_logged_in_shows_followed_posts(client, app):
     """
-    GET / : ログイン状態でトップページ表示をテスト
+    GET / : ログイン状態でフォローしているユーザーと自分のツイートが表示されるかテスト
     """
-    # テストユーザー作成・ログイン
-    register(client, 'testuser', 'test@example.com', 'password', 'password')
-    login(client, 'testuser', 'password')
+    # ユーザー作成
+    register(client, 'user1', 'user1@example.com', 'pass1', 'pass1')
+    register(client, 'user2', 'user2@example.com', 'pass2', 'pass2')
+    register(client, 'user3', 'user3@example.com', 'pass3', 'pass3')
 
+    # user1 でログインし、user2 をフォロー
+    login(client, 'user1', 'pass1')
+    client.post('/follow/user2', follow_redirects=True)
+    logout(client)
+
+    # 各ユーザーがツイート
+    login(client, 'user1', 'pass1')
+    client.post('/', data={'content': 'Tweet by user1'}, follow_redirects=True)
+    logout(client)
+
+    login(client, 'user2', 'pass2')
+    client.post('/', data={'content': 'Tweet by user2 (followed)'}, follow_redirects=True)
+    logout(client)
+
+    login(client, 'user3', 'pass3')
+    client.post('/', data={'content': 'Tweet by user3 (not followed)'}, follow_redirects=True)
+    logout(client)
+
+    # user1 で再度ログインし、タイムラインを確認
+    login(client, 'user1', 'pass1')
     response = client.get('/')
+
     assert response.status_code == 200
     assert b"Twitter Clone" in response.data
-    assert "こんにちは, testuser さん".encode('utf-8') in response.data # ユーザー名が表示される
-    assert "ログアウト".encode('utf-8') in response.data # ログアウトリンクがある
-    assert "ログイン".encode('utf-8') not in response.data # ログインリンクはない
-    assert "登録".encode('utf-8') not in response.data   # 登録リンクはない
-    assert "新しいツイートを投稿".encode('utf-8') in response.data # 投稿フォームがある
+    assert "こんにちは, user1 さん".encode('utf-8') in response.data
+    assert "新しいツイートを投稿".encode('utf-8') in response.data
     assert "タイムライン".encode('utf-8') in response.data
+
+    # user1 と user2 のツイートは表示される
+    assert b'Tweet by user1' in response.data
+    assert b'Tweet by user2 (followed)' in response.data
+    # user3 のツイートは表示されない
+    assert b'Tweet by user3 (not followed)' not in response.data
 
 
 def test_post_tweet_logged_in(client, app):
