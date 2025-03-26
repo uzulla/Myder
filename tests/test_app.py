@@ -249,3 +249,54 @@ def test_login_invalid_credentials(client, app):
     assert response.status_code == 200
     assert 'ユーザー名またはパスワードが無効です。'.encode('utf-8') in response.data
     assert 'ログイン'.encode('utf-8') in response.data
+
+
+# --- プロフィールページのテスト ---
+
+def test_user_profile_page(client, app):
+    """ユーザープロフィールページの表示テスト"""
+    # テストユーザーとツイートを作成
+    register(client, 'testuser', 'test@example.com', 'password', 'password')
+    login(client, 'testuser', 'password')
+    client.post('/', data={'content': 'Tweet 1 by testuser'}, follow_redirects=True)
+    client.post('/', data={'content': 'Tweet 2 by testuser'}, follow_redirects=True)
+
+    # 別のユーザーも作成
+    register(client, 'otheruser', 'other@example.com', 'password', 'password')
+    login(client, 'otheruser', 'password')
+    client.post('/', data={'content': 'Tweet by otheruser'}, follow_redirects=True)
+
+    # testuser のプロフィールページへアクセス
+    logout(client) # 一旦ログアウト
+    login(client, 'testuser', 'password') # 再度ログイン (login_requiredのため)
+    response = client.get('/user/testuser')
+
+    assert response.status_code == 200
+    assert "testuser のプロフィール".encode('utf-8') in response.data
+    assert b'Tweet 1 by testuser' in response.data
+    assert b'Tweet 2 by testuser' in response.data
+    # 他のユーザーのツイートは表示されない
+    assert b'Tweet by otheruser' not in response.data
+
+def test_user_profile_not_found(client, app):
+    """存在しないユーザーのプロフィールページアクセスで404テスト"""
+    # ログインしておく (login_requiredのため)
+    register(client, 'testuser', 'test@example.com', 'password', 'password')
+    login(client, 'testuser', 'password')
+
+    response = client.get('/user/nosuchuser')
+    assert response.status_code == 404
+
+def test_user_profile_link_on_timeline(client, app):
+    """タイムライン上のユーザー名がプロフィールへのリンクになっているかテスト"""
+    # ユーザーとツイート作成
+    register(client, 'testuser', 'test@example.com', 'password', 'password')
+    login(client, 'testuser', 'password')
+    client.post('/', data={'content': 'A tweet to check the link'}, follow_redirects=True)
+
+    # タイムラインを取得
+    response = client.get('/')
+    assert response.status_code == 200
+    # ユーザー名が /user/testuser へのリンクになっているか確認
+    expected_link = f'<a href="/user/testuser">testuser</a>'.encode('utf-8')
+    assert expected_link in response.data

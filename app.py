@@ -56,6 +56,20 @@ def index():
     return render_template('index.html', tweets=tweets)
 
 
+@app.route('/user/<username>')
+@login_required # プロフィールを見るにはログインが必要 (任意、公開プロフィールなら不要)
+def user(username):
+    """ユーザープロフィールページ"""
+    # ユーザーが存在するか確認
+    user = User.query.filter_by(username=username).first_or_404() # 見つからなければ404エラー
+
+    # そのユーザーのツイートを取得 (新しい順)
+    # Tweetモデルのauthorリレーションを使ってフィルタリング
+    tweets = user.tweets.order_by(Tweet.created_at.desc()).all()
+
+    return render_template('user.html', user=user, tweets=tweets)
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """ユーザー登録"""

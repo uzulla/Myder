@@ -23,8 +23,10 @@
     {% if tweets %}
         {% for tweet in tweets %}
             <div class="tweet">
-                {# author リレーションを使ってユーザー名を表示 #}
-                <div class="username">{{ tweet.author.username }}</div>
+                {# author リレーションを使ってユーザー名を表示し、プロフィールへのリンクを追加 #}
+                <div class="username">
+                    <a href="{{ url_for('user', username=tweet.author.username) }}">{{ tweet.author.username }}</a>
+                </div>
                 <div class="content">{{ tweet.content }}</div>
                 <div class="timestamp">{{ tweet.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
             </div>

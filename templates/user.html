@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}のプロフィール - Twitter Clone{% endblock %}
+
+{% block content %}
+    <h2>{{ user.username }} のツイート</h2>
+
+    {# ユーザー情報 (将来的に詳細を追加可能) #}
+    {# <p>Email: {{ user.email }}</p> #}
+    <hr>
+
+    {# ツイート一覧 #}
+    {% if tweets %}
+        {% for tweet in tweets %}
+            <div class="tweet">
+                {# プロフィールページではユーザー名は不要かもしれないが、一貫性のために残す #}
+                <div class="username">{{ tweet.author.username }}</div>
+                <div class="content">{{ tweet.content }}</div>
+                <div class="timestamp">{{ tweet.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>{{ user.username }} はまだツイートしていません。</p>
+    {% endif %}
+{% endblock %}
