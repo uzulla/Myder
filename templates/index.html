@@ -3,26 +3,28 @@
 {% block title %}ホーム - Twitter Clone{% endblock %}
 
 {% block content %}
-    <h2>新しいツイートを投稿</h2>
-    <form method="post">
-        <div>
-            <label for="username">ユーザー名:</label><br>
-            <input type="text" id="username" name="username" value="名無しさん">
-        </div>
-        <div>
-            <label for="content">内容 (280文字まで):</label><br>
-            <textarea id="content" name="content" rows="3" maxlength="280" required></textarea>
-        </div>
-        <button type="submit">ツイート</button>
-    </form>
-
-    <hr>
+    {% if current_user.is_authenticated %}
+        <h2>新しいツイートを投稿</h2>
+        <form method="post">
+            {# ユーザー名は current_user から取得するため入力不要 #}
+            <div>
+                <label for="content">内容 (280文字まで):</label><br>
+                <textarea id="content" name="content" rows="3" maxlength="280" required></textarea>
+            </div>
+            <button type="submit">ツイート</button>
+        </form>
+        <hr>
+    {% else %}
+        <p><a href="{{ url_for('login') }}">ログイン</a>してツイートを投稿しましょう。</p>
+        <hr>
+    {% endif %}
 
     <h2>タイムライン</h2>
     {% if tweets %}
         {% for tweet in tweets %}
             <div class="tweet">
-                <div class="username">{{ tweet.username }}</div>
+                {# author リレーションを使ってユーザー名を表示 #}
+                <div class="username">{{ tweet.author.username }}</div>
                 <div class="content">{{ tweet.content }}</div>
                 <div class="timestamp">{{ tweet.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
             </div>

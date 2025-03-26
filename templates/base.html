@@ -15,10 +15,41 @@
     </style>
 </head>
 <body>
-    <h1><a href="{{ url_for('index') }}">Twitter Clone</a></h1>
+    <nav>
+        <h1><a href="{{ url_for('index') }}">Twitter Clone</a></h1>
+        <ul>
+            {% if current_user.is_authenticated %}
+                <li><span>こんにちは, {{ current_user.username }} さん</span></li>
+                <li><a href="{{ url_for('logout') }}">ログアウト</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">ログイン</a></li>
+                <li><a href="{{ url_for('register') }}">登録</a></li>
+            {% endif %}
+        </ul>
+    </nav>
     <hr>
+    {# フラッシュメッセージの表示 #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
     <div class="content">
         {% block content %}{% endblock %}
     </div>
+    <style>
+        nav ul { list-style: none; padding: 0; margin: 0; float: right; }
+        nav ul li { display: inline-block; margin-left: 15px; }
+        .flashes { list-style: none; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+        .flashes .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flashes .danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .flashes .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .flashes .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
 </body>
 </html>

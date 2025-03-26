@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}ユーザー登録 - Twitter Clone{% endblock %}
+
+{% block content %}
+<h2>ユーザー登録</h2>
+<form method="post">
+    <div>
+        <label for="username">ユーザー名:</label><br>
+        <input type="text" id="username" name="username" required value="{{ request.form.username }}">
+    </div>
+    <div>
+        <label for="email">メールアドレス:</label><br>
+        <input type="email" id="email" name="email" required value="{{ request.form.email }}">
+    </div>
+    <div>
+        <label for="password">パスワード:</label><br>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <label for="password2">パスワード (確認):</label><br>
+        <input type="password" id="password2" name="password2" required>
+    </div>
+    <button type="submit">登録</button>
+</form>
+<p>既にアカウントをお持ちですか？ <a href="{{ url_for('login') }}">ログイン</a></p>
+{% endblock %}

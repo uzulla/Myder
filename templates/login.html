@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}ログイン - Twitter Clone{% endblock %}
+
+{% block content %}
+<h2>ログイン</h2>
+<form method="post">
+    <div>
+        <label for="username">ユーザー名:</label><br>
+        <input type="text" id="username" name="username" required value="{{ request.form.username }}">
+    </div>
+    <div>
+        <label for="password">パスワード:</label><br>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <input type="checkbox" id="remember" name="remember">
+        <label for="remember">ログイン状態を保持する</label>
+    </div>
+    <button type="submit">ログイン</button>
+</form>
+<p>アカウントをお持ちでないですか？ <a href="{{ url_for('register') }}">登録</a></p>
+{% endblock %}
