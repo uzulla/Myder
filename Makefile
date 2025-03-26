@@ -1,21 +1,40 @@
-.PHONY: run pull run-bash run-root-bash run-model
+.PHONY: help run run-bash run-bash-no-mount run-root-bash run-root-bash-no-mount run-model run-model-no-mount build
 
 help:
-	@echo "Available commands:"
-	@echo "  help                   - Show this help message"
-	@echo "  run                    - Run Aider with default Gemini 2.5 Pro model"
-	@echo "  run-model MODEL=name   - Run Aider with specified model (via OpenRouter)"
-	@echo "  run-bash               - Start bash shell inside Docker container"
-	@echo "  run-root-bash          - Start bash shell as root inside Docker container"
-	@echo "  run-root-bash-no-mount - Start bash shell as root without mounting current directory"
-	@echo "  pull                   - Update Docker image to the latest version"
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+	@echo "║                                 MYDER HELP                                    ║"
+	@echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "  GENERAL COMMANDS:"
+	@echo "  ────────────────────────────────────────────────────────────────────────────"
+	@echo "    help                      Show this help message"
+	@echo "    build                     Build and update Docker image locally"
+	@echo ""
+	@echo "  RUNNING COMMANDS:"
+	@echo "  ────────────────────────────────────────────────────────────────────────────"
+	@echo "    run                       Run Aider with default Gemini 2.5 Pro model"
+	@echo "    run-model MODEL=name      Run Aider with specified model (via OpenRouter)"
+	@echo "    run-model-no-mount MODEL=name"
+	@echo "                              Run Aider with specified model without mounting"
+	@echo "                              current directory"
+	@echo ""
+	@echo "  SHELL ACCESS COMMANDS:"
+	@echo "  ────────────────────────────────────────────────────────────────────────────"
+	@echo "    run-bash                  Start bash shell inside Docker container"
+	@echo "    run-bash-no-mount         Start bash shell inside Docker container without"
+	@echo "                              mounting current directory"
+	@echo "    run-root-bash             Start bash shell as root inside Docker container"
+	@echo "    run-root-bash-no-mount    Start bash shell as root without mounting"
+	@echo "                              current directory"
+	@echo ""
 
 run:
 	docker run --rm -it \
 		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
 		--volume $(PWD):/app \
 		--workdir=/app \
-		paulgauthier/aider-full \
+		myder \
 		--analytics-disable \
 		--model openrouter/google/gemini-2.5-pro-exp-03-25:free
 
@@ -25,7 +44,14 @@ run-bash:
 		--volume $(PWD):/app \
 		--workdir=/app \
 		--entrypoint /bin/bash \
-		paulgauthier/aider-full
+		myder
+
+run-bash-no-mount:
+	docker run --rm -it \
+		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
+		--workdir=/app \
+		--entrypoint /bin/bash \
+		myder
 
 run-root-bash:
 	docker run --rm -it \
@@ -34,7 +60,7 @@ run-root-bash:
 		--volume $(PWD):/app \
 		--workdir=/app \
 		--entrypoint /bin/bash \
-		paulgauthier/aider-full
+		myder
 
 run-root-bash-no-mount:
 	docker run --rm -it \
@@ -42,7 +68,7 @@ run-root-bash-no-mount:
 		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
 		--workdir=/app \
 		--entrypoint /bin/bash \
-		paulgauthier/aider-full
+		myder
 		
 run-model:
 	@if [ -z "$(MODEL)" ]; then \
@@ -53,9 +79,23 @@ run-model:
 		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
 		--volume $(PWD):/app \
 		--workdir=/app \
-		paulgauthier/aider-full --analytics-disable \
+		myder \
+		--analytics-disable \
 		--model openrouter/$(MODEL)
 
-pull:
-	docker pull paulgauthier/aider-full
+run-model-no-mount:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "Error: MODEL parameter is required. Usage: make run-model MODEL=your_model_name"; \
+		exit 1; \
+	fi
+	docker run --rm -it \
+		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
+		--workdir=/app \
+		myder \
+		--analytics-disable \
+		--model openrouter/$(MODEL)
+
+build:
+	cd $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST)))) && \
+	Docker build -t myder .
 

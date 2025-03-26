@@ -27,12 +27,15 @@ Bind mountする都合上、以下指定を追加したほうがよいかもし�
    cd myder
    ```
 
-2. Dockerイメージを取得します(アップデートのためにたまに実行してください)：
+2. Dockerイメージをビルドします：
    ```shell
-   make pull
+   make build
    ```
+> Q: なぜ、ビルドしているのか？
+> A: Aiderの公式コンテナはツールが足りない(curlすらない)のでつらいからです。そしてphpがあるのは作者の趣味です。
 
-3. 都度環境変数 `OPENROUTER_API_KEY` を設定するか、`.env`ファイルをcloneしたDirectoryに作成し、OpenRouterのAPIキーを設定します：
+
+1. 都度環境変数 `OPENROUTER_API_KEY` を設定するか、`.env`ファイルをcloneしたDirectoryに作成し、OpenRouterのAPIキーを設定します：
    ```env
    OPENROUTER_API_KEY=your_api_key_here
    ```
@@ -54,9 +57,21 @@ Bind mountする都合上、以下指定を追加したほうがよいかもし�
 
 ## オプションやタスク
 
+### コマンド一覧を確認
+
+利用可能なすべてのコマンドとその説明を表示するには、以下を実行してください：
+
+```
+make help
+# または
+myder help
+```
+
+これは初めて使う際や、利用可能なオプションを確認したい場合に役立ちます。
+
 ### 基本的な実行方法
 
-デフォルトのGemini-2.5-pro-expモデルを使用して実行：
+デフォルトのGemini-2.5-pro-exp-03-25モデルを使用して実行：
 
 ```
 make run
@@ -84,6 +99,18 @@ make run-bash
 
 ```
 make run-root-bash
+```
+
+### マウントせずにRoot権限でコンテナ内のbashを実行
+
+```
+make run-root-bash-no-mount
+```
+
+### Dockerイメージをビルド
+
+```
+make build
 ```
 
 ### どこからでも簡単にMyderを使用する
@@ -127,4 +154,4 @@ myder run-model MODEL=anthropic/claude-3-opus
 ### モデル選定
 
 AiderをClaude codeのようにつかう(プログラミングに使う)場合、Modelの選定が重要です。
-性能の良いものをつかいましょう。たとえば `Claude 3.7 sonet` です
+性能の良いものをつかいましょう。たとえば `anthropic/claude-3-7-sonnet` です
