@@ -300,3 +300,139 @@ def test_user_profile_link_on_timeline(client, app):
     # ユーザー名が /user/testuser へのリンクになっているか確認
     expected_link = f'<a href="/user/testuser">testuser</a>'.encode('utf-8')
     assert expected_link in response.data
+
+
+# --- フォロー/アンフォロー機能のテスト ---
+
+def test_follow(client, app):
+    """ユーザーフォロー機能のテスト"""
+    # ユーザー1とユーザー2を作成・ログイン
+    register(client, 'user1', 'user1@example.com', 'pass1', 'pass1')
+    register(client, 'user2', 'user2@example.com', 'pass2', 'pass2')
+    login(client, 'user1', 'pass1')
+
+    # user1 が user2 をフォローする
+    response = client.post(f'/follow/user2', follow_redirects=True)
+    assert response.status_code == 200
+    assert 'user2 をフォローしました。'.encode('utf-8') in response.data
+
+    # DBでフォロー関係を確認
+    with app.app_context():
+        u1 = User.query.filter_by(username='user1').first()
+        u2 = User.query.filter_by(username='user2').first()
+        assert u1.is_following(u2)
+        assert not u2.is_following(u1)
+        assert u2.followers.count() == 1
+        assert u2.followers.first().username == 'user1'
+        assert u1.followed.count() == 1
+        assert u1.followed.first().username == 'user2'
+
+    # user2 のプロフィールページでアンフォローボタンが表示されるか確認
+    response = client.get('/user/user2')
+    assert response.status_code == 200
+    assert 'アンフォロー'.encode('utf-8') in response.data
+    assert 'フォロー'.encode('utf-8') not in response.data # フォローボタンはない
+
+def test_unfollow(client, app):
+    """ユーザーアンフォロー機能のテスト"""
+    # ユーザー1とユーザー2を作成し、user1がuser2をフォロー済み状態にする
+    register(client, 'user1', 'user1@example.com', 'pass1', 'pass1')
+    register(client, 'user2', 'user2@example.com', 'pass2', 'pass2')
+    with app.app_context():
+        u1 = User.query.filter_by(username='user1').first()
+        u2 = User.query.filter_by(username='user2').first()
+        u1.follow(u2)
+        db.session.commit()
+
+    # user1 でログイン
+    login(client, 'user1', 'pass1')
+
+    # user1 が user2 をアンフォローする
+    response = client.post(f'/unfollow/user2', follow_redirects=True)
+    assert response.status_code == 200
+    assert 'user2 のフォローを解除しました。'.encode('utf-8') in response.data
+
+    # DBでフォロー関係が解除されたか確認
+    with app.app_context():
+        u1 = User.query.filter_by(username='user1').first()
+        u2 = User.query.filter_by(username='user2').first()
+        assert not u1.is_following(u2)
+        assert u2.followers.count() == 0
+        assert u1.followed.count() == 0
+
+    # user2 のプロフィールページでフォローボタンが表示されるか確認
+    response = client.get('/user/user2')
+    assert response.status_code == 200
+    assert 'フォロー'.encode('utf-8') in response.data
+    assert 'アンフォロー'.encode('utf-8') not in response.data # アンフォローボタンはない
+
+
+def test_unfollow_button_on_profile(client, app):
+    """プロフィールページでのアンフォローボタン表示テスト (test_follow_button_on_profileと重複するが念のため)"""
+    # ユーザー作成し、user1がuser2をフォロー済み
+    register(client, 'user1', 'user1@example.com', 'pass1', 'pass1')
+    register(client, 'user2', 'user2@example.com', 'pass2', 'pass2')
+    with app.app_context():
+        u1 = User.query.filter_by(username='user1').first()
+        u2 = User.query.filter_by(username='user2').first()
+        u1.follow(u2)
+        db.session.commit()
+
+    # user1 でログインし、user2 のプロフィールを見る
+    login(client, 'user1', 'pass1')
+    response = client.get('/user/user2')
+    assert response.status_code == 200
+    assert 'アンフォロー'.encode('utf-8') in response.data # アンフォローボタンがある
+    assert 'フォロー'.encode('utf-8') not in response.data
+
+
+def test_follow_self(client, app):
+    """自分自身をフォローできないことのテスト"""
+    register(client, 'user1', 'user1@example.com', 'pass1', 'pass1')
+    login(client, 'user1', 'pass1')
+
+    response = client.post('/follow/user1', follow_redirects=True)
+    assert response.status_code == 200
+    assert '自分自身をフォローすることはできません。'.encode('utf-8') in response.data
+
+    # DBでフォロー関係がないことを確認
+    with app.app_context():
+        u1 = User.query.filter_by(username='user1').first()
+        assert not u1.is_following(u1)
+        assert u1.followed.count() == 0
+        assert u1.followers.count() == 0
+
+def test_follow_not_logged_in(client):
+    """ログインせずにフォローしようとするとリダイレクトされるテスト"""
+    response = client.post('/follow/someuser', follow_redirects=True)
+    assert response.status_code == 200
+    assert b'Please log in to access this page.' in response.data # Flask-Loginのメッセージ
+    assert 'ログイン'.encode('utf-8') in response.data # ログインページにいる
+
+def test_follow_button_on_profile(client, app):
+    """プロフィールページでのフォロー/アンフォローボタン表示テスト"""
+    # ユーザー作成
+    register(client, 'user1', 'user1@example.com', 'pass1', 'pass1')
+    register(client, 'user2', 'user2@example.com', 'pass2', 'pass2')
+
+    # user1 でログインし、user2 のプロフィールを見る
+    login(client, 'user1', 'pass1')
+    response = client.get('/user/user2')
+    assert response.status_code == 200
+    assert 'フォロー'.encode('utf-8') in response.data # フォローボタンがある
+    assert 'アンフォロー'.encode('utf-8') not in response.data
+
+    # user1 が user2 をフォロー
+    client.post('/follow/user2', follow_redirects=True)
+
+    # 再度 user2 のプロフィールを見る
+    response = client.get('/user/user2')
+    assert response.status_code == 200
+    assert 'アンフォロー'.encode('utf-8') in response.data # アンフォローボタンがある
+    assert 'フォロー'.encode('utf-8') not in response.data
+
+    # user1 の自分のプロフィールを見る
+    response = client.get('/user/user1')
+    assert response.status_code == 200
+    assert 'フォロー'.encode('utf-8') not in response.data # 自分にはボタンがない
+    assert 'アンフォロー'.encode('utf-8') not in response.data

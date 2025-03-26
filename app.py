@@ -70,6 +70,44 @@ def user(username):
     return render_template('user.html', user=user, tweets=tweets)
 
 
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    """指定したユーザーをフォローする"""
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash(f'ユーザー {username} が見つかりません。', 'warning')
+        return redirect(url_for('index'))
+    if user == current_user:
+        flash('自分自身をフォローすることはできません。', 'warning')
+        return redirect(url_for('user', username=username))
+
+    current_user.follow(user)
+    db.session.commit()
+    flash(f'{username} をフォローしました。', 'success')
+    # 元のプロフィールページ、または指定されたリダイレクト先へ
+    return redirect(request.referrer or url_for('user', username=username))
+
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    """指定したユーザーのフォローを解除する"""
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash(f'ユーザー {username} が見つかりません。', 'warning')
+        return redirect(url_for('index'))
+    if user == current_user:
+        flash('自分自身をアンフォローすることはできません。', 'warning')
+        return redirect(url_for('user', username=username))
+
+    current_user.unfollow(user)
+    db.session.commit()
+    flash(f'{username} のフォローを解除しました。', 'info')
+    # 元のプロフィールページ、または指定されたリダイレクト先へ
+    return redirect(request.referrer or url_for('user', username=username))
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """ユーザー登録"""

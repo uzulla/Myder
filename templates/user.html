@@ -5,8 +5,23 @@
 {% block content %}
     <h2>{{ user.username }} のツイート</h2>
 
-    {# ユーザー情報 (将来的に詳細を追加可能) #}
+    {# ユーザー情報 #}
     {# <p>Email: {{ user.email }}</p> #}
+
+    {# フォロー/アンフォローボタン (自分自身のプロフィールでない場合) #}
+    {% if user != current_user %}
+        <div>
+            {% if current_user.is_following(user) %}
+                <form action="{{ url_for('unfollow', username=user.username) }}" method="post" style="display: inline;">
+                    <button type="submit">アンフォロー</button>
+                </form>
+            {% else %}
+                <form action="{{ url_for('follow', username=user.username) }}" method="post" style="display: inline;">
+                    <button type="submit">フォロー</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
     <hr>
 
     {# ツイート一覧 #}
