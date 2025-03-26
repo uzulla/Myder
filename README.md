@@ -71,21 +71,43 @@ myder help
 
 ### 基本的な実行方法
 
-デフォルトのGemini-2.5-pro-exp-03-25モデルを使用して実行：
-
 ```
 make run
 ```
+
+デフォルトのGemini-2.5-pro-exp-03-25モデルを使用して実行：
 
 > 特に、このモデルが推奨ということではありません。
 
 ### 特定のモデルを指定して実行
 
 ```
-make run-model MODEL=anthropic/claude-3-opus
+make run MODEL=anthropic/claude-3-opus
 ```
 
 利用可能なモデルは[OpenRouterのモデル一覧](https://openrouter.ai/models)から確認できます。
+
+### マウントせずに実行
+
+```
+make run NOMOUNT=1
+```
+
+つまり、ホストを破壊しません。
+
+### 自動確認モードで実行（危険）
+
+```
+make run FORCE_YES=1
+```
+
+OKをEnterで押すのにつかれた人向け
+
+### オプションを組み合わせて実行
+
+```
+make run MODEL=anthropic/claude-3-haiku-20240307 FORCE_YES=1 NOMOUNT=1
+```
 
 ## 特殊な使い方(主にデバッグ用)
 
@@ -93,6 +115,12 @@ make run-model MODEL=anthropic/claude-3-opus
 
 ```
 make run-bash
+```
+
+### マウントせずにbashを実行
+
+```
+make run-bash NOMOUNT=1
 ```
 
 ### Root権限でコンテナ内のbashを実行
@@ -104,8 +132,10 @@ make run-root-bash
 ### マウントせずにRoot権限でコンテナ内のbashを実行
 
 ```
-make run-root-bash-no-mount
+make run-root-bash NOMOUNT=1
 ```
+
+このコマンドの修正はコマンド再実行時に保存されません。必要ならDockerを修正してビルドしなおしてください。
 
 ### Dockerイメージをビルド
 
@@ -136,7 +166,10 @@ echo 'alias myder="make -f ~/dev/myder/Makefile"' >> ~/.zshrc
 myder run
 
 # モデル指定
-myder run-model MODEL=anthropic/claude-3-opus
+myder run MODEL=anthropic/claude-3-opus
+
+# オプション組み合わせ
+myder run MODEL=anthropic/claude-3-haiku-20240307 FORCE_YES=1 NOMOUNT=1
 ```
 
 ## Aiderの仕様
