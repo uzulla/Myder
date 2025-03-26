@@ -1,5 +1,15 @@
 .PHONY: run pull run-bash run-root-bash run-model
 
+help:
+	@echo "Available commands:"
+	@echo "  help                   - Show this help message"
+	@echo "  run                    - Run Aider with default Gemini 2.5 Pro model"
+	@echo "  run-model MODEL=name   - Run Aider with specified model (via OpenRouter)"
+	@echo "  run-bash               - Start bash shell inside Docker container"
+	@echo "  run-root-bash          - Start bash shell as root inside Docker container"
+	@echo "  run-root-bash-no-mount - Start bash shell as root without mounting current directory"
+	@echo "  pull                   - Update Docker image to the latest version"
+
 run:
 	docker run --rm -it \
 		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
@@ -22,6 +32,14 @@ run-root-bash:
 		--user 0:0 \
 		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
 		--volume $(PWD):/app \
+		--workdir=/app \
+		--entrypoint /bin/bash \
+		paulgauthier/aider-full
+
+run-root-bash-no-mount:
+	docker run --rm -it \
+		--user 0:0 \
+		--env-file=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/.env \
 		--workdir=/app \
 		--entrypoint /bin/bash \
 		paulgauthier/aider-full
