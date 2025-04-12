@@ -16,12 +16,9 @@ def list_providers():
             providers.append(fname[:-3])
     return providers
 
-def to_pascal_case(s):
-    return "".join([w.capitalize() for w in s.replace("-", "_").split("_")])
-
 def load_provider(name, api_key):
     module = importlib.import_module(f"provider.{name}")
-    class_name = to_pascal_case(name) + "Provider"
+    class_name = name + "Provider"
     provider_class = getattr(module, class_name)
     return provider_class(api_key)
 
