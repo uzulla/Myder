@@ -1,6 +1,6 @@
 # Myder
 
-**[重要] 今後はMakefile依存を廃止し、Python CLI（myder.py）での利用を推奨します。Makefileは廃止予定です。**
+**[重要] Makefileは廃止されました。今後はPython CLI（myder.py）での利用を推奨します。**
 
 ---
 
