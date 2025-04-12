@@ -3,7 +3,7 @@ import argparse
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-from myder_core import list_providers, run_provider, build_docker
+from myder_core import list_providers, run_provider, build_docker, DEFAULT_PROVIDER, DEFAULT_MODEL
 
 def main():
     parser = argparse.ArgumentParser(description="Myder Python CLI")
@@ -23,11 +23,9 @@ def main():
     elif args.command == "build":
         build_docker()
     elif args.command == "run":
-        if args.provider:
-            run_provider(args.provider, model=args.model)
-        else:
-            print("No provider specified. Use --provider option.")
-            sys.exit(1)
+        provider = args.provider if args.provider else DEFAULT_PROVIDER
+        model = args.model if args.model else DEFAULT_MODEL
+        run_provider(provider, model=model)
     else:
         parser.print_help()
 
