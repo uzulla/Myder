@@ -17,7 +17,7 @@ def list_providers():
     return providers
 
 def load_provider(name, api_key):
-    module = importlib.import_module(f"provider.{name}")
+    module = importlib.import_module(f"provider.{name.lower()}")
     class_name = name + "Provider"
     provider_class = getattr(module, class_name)
     return provider_class(api_key)
