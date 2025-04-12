@@ -1,4 +1,4 @@
-DEFAULT_PROVIDER = "openrouter"
+DEFAULT_PROVIDER = "OpenRouter"
 DEFAULT_MODEL = "gemini-2.5"
 import sys
 import os
