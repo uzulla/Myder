@@ -3,7 +3,6 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 import importlib
-import os
 
 PROVIDER_DIR = os.path.join(os.path.dirname(__file__), "provider")
 
