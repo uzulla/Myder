@@ -14,12 +14,14 @@ def list_providers():
             providers.append(fname[:-3])
     return providers
 
-def load_provider(name):
+def load_provider(name, api_key):
     module = importlib.import_module(f"provider.{name}")
-    return module.Provider()
+    class_name = ''.join([part.capitalize() for part in name.split('_')]) + "Provider"
+    provider_class = getattr(module, class_name)
+    return provider_class(api_key)
 
-def run_provider(provider_name, model=None):
-    provider = load_provider(provider_name)
+def run_provider(provider_name, api_key, model=None):
+    provider = load_provider(provider_name, api_key)
     return provider.run(model)
 
 def build_docker():
