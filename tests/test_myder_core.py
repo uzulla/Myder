@@ -16,7 +16,9 @@ def test_load_provider():
 def test_run_provider(capsys):
     myder_core.run_provider("sample_provider", model="test-model")
     captured = capsys.readouterr()
-    assert "SampleProvider: running with model=test-model" in captured.outdef test_openrouter_provider_properties():
+    assert "SampleProvider: running with model=test-model" in captured.out
+
+def test_openrouter_provider_properties():
     from provider.openrouter import OpenRouterProvider
     provider = OpenRouterProvider(api_key="dummy-key")
     assert provider.name == "openrouter"

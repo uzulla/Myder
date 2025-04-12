@@ -14,10 +14,17 @@ def list_providers():
             providers.append(fname[:-3])
     return providers
 
+import inspect
+
 def load_provider(name, api_key):
     module = importlib.import_module(f"provider.{name.lower()}")
-    class_name = name + "Provider"
-    provider_class = getattr(module, class_name)
+    provider_class = None
+    for _, cls in inspect.getmembers(module, inspect.isclass):
+        if cls.__module__ == module.__name__:
+            provider_class = cls
+            break
+    if provider_class is None:
+        raise ImportError(f"No valid provider class found in module 'provider.{name.lower()}'")
     return provider_class(api_key)
 
 def run_provider(provider_name, api_key, model=None):
