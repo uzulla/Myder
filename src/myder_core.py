@@ -1,5 +1,3 @@
-DEFAULT_PROVIDER = "OpenRouter"
-DEFAULT_MODEL = "openrouter/google/gemini-2.5-pro-exp-03-25:free"
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
