@@ -1,41 +1,13 @@
 import argparse
-import importlib
-import os
 import sys
-
-PROVIDER_DIR = os.path.join(os.path.dirname(__file__), "provider")
-
-def list_providers():
-    providers = []
-    for fname in os.listdir(PROVIDER_DIR):
-        if fname.endswith(".py") and fname != "__init__.py":
-            providers.append(fname[:-3])
-    return providers
-
-def load_provider(name):
-    try:
-        module = importlib.import_module(f"provider.{name}")
-        return module.Provider()
-    except Exception as e:
-        print(f"Provider load error: {e}")
-        sys.exit(1)
-
-def build():
-    os.system("docker build -t myder .")
-
-def run(model=None, provider_name=None):
-    if provider_name:
-        provider = load_provider(provider_name)
-        provider.run(model)
-    else:
-        print("No provider specified. Use --provider option.")
+from myder_core import list_providers, run_provider, build_docker
 
 def main():
     parser = argparse.ArgumentParser(description="Myder Python CLI")
     subparsers = parser.add_subparsers(dest="command")
 
-    parser_help = subparsers.add_parser("help", help="Show help")
-    parser_build = subparsers.add_parser("build", help="Build Docker image")
+    subparsers.add_parser("help", help="Show help")
+    subparsers.add_parser("build", help="Build Docker image")
     parser_run = subparsers.add_parser("run", help="Run with provider")
     parser_run.add_argument("--model", type=str, help="Model name")
     parser_run.add_argument("--provider", type=str, help="Provider name")
@@ -46,9 +18,13 @@ def main():
         parser.print_help()
         print("\nAvailable providers:", ", ".join(list_providers()))
     elif args.command == "build":
-        build()
+        build_docker()
     elif args.command == "run":
-        run(model=args.model, provider_name=args.provider)
+        if args.provider:
+            run_provider(args.provider, model=args.model)
+        else:
+            print("No provider specified. Use --provider option.")
+            sys.exit(1)
     else:
         parser.print_help()
 
