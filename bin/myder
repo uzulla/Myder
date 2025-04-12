@@ -9,17 +9,19 @@ def main():
     subparsers = parser.add_subparsers(dest="command")
 
     run_parser = subparsers.add_parser(
-    "run",
-    help="Run myder in Docker",
-    description=(
-        "Run myder in Docker.\n\n"
-        "Environment variable options:\n"
-        "  NOMOUNT=1     Do not mount current directory to /app in container\n"
-        "  FORCE_YES=1   Add --yes-always flag to myder in container\n"
-        "  .env file     Used for --env-file to pass secrets\n"
+        "run",
+        help="Run myder in Docker",
+        description=(
+            "Run myder in Docker.\n\n"
+            "Environment variable options:\n"
+            "  NOMOUNT=1     Do not mount current directory to /app in container\n"
+            "  FORCE_YES=1   Add --yes-always flag to myder in container\n"
+            "  .env file     Used for --env-file to pass secrets\n"
+        )
     )
-)
     run_parser.add_argument("--model", type=str, help="Model name (default: openrouter/google/gemini-2.5-pro-exp-03-25:free)")
+    run_parser.add_argument("--nomount", action="store_true", help="Do not mount current directory to /app in container (overrides NOMOUNT env)")
+    run_parser.add_argument("--force-yes", action="store_true", help="Add --yes-always flag to myder in container (overrides FORCE_YES env)")
 
     args = parser.parse_args()
 
@@ -28,9 +30,9 @@ def main():
         model = args.model if args.model else "openrouter/google/gemini-2.5-pro-exp-03-25:free"
         model_arg = model
 
-        # Environment variables
-        nomount = os.environ.get("NOMOUNT", "0") == "1"
-        force_yes = os.environ.get("FORCE_YES", "0") == "1"
+        # Prefer CLI options over environment variables
+        nomount = args.nomount or os.environ.get("NOMOUNT", "0") == "1"
+        force_yes = args.force_yes or os.environ.get("FORCE_YES", "0") == "1"
 
         # Volume mount
         volume_arg = [] if nomount else ["--volume", f"{os.getcwd()}:/app"]
