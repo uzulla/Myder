@@ -8,8 +8,18 @@ def main():
     parser = argparse.ArgumentParser(description="Myder CLI (docker run wrapper)")
     subparsers = parser.add_subparsers(dest="command")
 
-    run_parser = subparsers.add_parser("run", help="Run myder in Docker")
-    run_parser.add_argument("--model", type=str, help="Model name (default: google/gemini-2.5-pro-exp-03-25:free)")
+    run_parser = subparsers.add_parser(
+    "run",
+    help="Run myder in Docker",
+    description=(
+        "Run myder in Docker.\n\n"
+        "Environment variable options:\n"
+        "  NOMOUNT=1     Do not mount current directory to /app in container\n"
+        "  FORCE_YES=1   Add --yes-always flag to myder in container\n"
+        "  .env file     Used for --env-file to pass secrets\n"
+    )
+)
+    run_parser.add_argument("--model", type=str, help="Model name (default: openrouter/google/gemini-2.5-pro-exp-03-25:free)")
 
     args = parser.parse_args()
 
