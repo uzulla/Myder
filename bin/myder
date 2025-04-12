@@ -52,7 +52,9 @@ def main():
             print(f"API Key not found for provider '{provider}'.\n"
                   f"Set {provider.upper()}_API_KEY in environment or .env, or use --api-key.")
             sys.exit(1)
-        run_provider(provider, api_key, model=model)
+        result = run_provider(provider, api_key, model=model)
+        if result is not None:
+            print(result)
     else:
         parser.print_help()
 
