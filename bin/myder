@@ -1,60 +1,51 @@
 #!/usr/bin/env python3
 import argparse
-import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-from myder_core import list_providers, run_provider, build_docker, DEFAULT_PROVIDER, DEFAULT_MODEL
-
-def load_dotenv(dotenv_path=".env"):
-    try:
-        with open(dotenv_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                k, v = line.split("=", 1)
-                k, v = k.strip(), v.strip().strip('"').strip("'")
-                if k not in os.environ:
-                    os.environ[k] = v
-    except FileNotFoundError:
-        pass
-
-def get_api_key(provider, cli_api_key=None):
-    if cli_api_key:
-        return cli_api_key
-    env_key = f"{provider.upper()}_API_KEY"
-    return os.environ.get(env_key)
+import subprocess
+import sys
 
 def main():
-    parser = argparse.ArgumentParser(description="Myder Python CLI")
+    parser = argparse.ArgumentParser(description="Myder CLI (docker run wrapper)")
     subparsers = parser.add_subparsers(dest="command")
 
-    subparsers.add_parser("help", help="Show help")
-    subparsers.add_parser("build", help="Build Docker image")
-    parser_run = subparsers.add_parser("run", help="Run with provider")
-    parser_run.add_argument("--model", type=str, help="Model name")
-    parser_run.add_argument("--provider", type=str, help="Provider name")
-    parser_run.add_argument("--api-key", type=str, help="API Key (overrides env/.env)")
+    run_parser = subparsers.add_parser("run", help="Run myder in Docker")
+    run_parser.add_argument("--model", type=str, help="Model name (default: google/gemini-2.5-pro-exp-03-25:free)")
 
     args = parser.parse_args()
 
-    if args.command == "help" or args.command is None:
-        parser.print_help()
-        print("\nAvailable providers:", ", ".join(list_providers()))
-    elif args.command == "build":
-        build_docker()
-    elif args.command == "run":
-        provider = args.provider if args.provider else DEFAULT_PROVIDER
-        model = args.model if args.model else DEFAULT_MODEL
-        load_dotenv()
-        api_key = get_api_key(provider, args.api_key)
-        if not api_key:
-            print(f"API Key not found for provider '{provider}'.\n"
-                  f"Set {provider.upper()}_API_KEY in environment or .env, or use --api-key.")
-            sys.exit(1)
-        result = run_provider(provider, api_key, model=model)
-        if result is not None:
-            print(result)
+    if args.command == "run":
+        # Model name
+        model = args.model if args.model else "google/gemini-2.5-pro-exp-03-25:free"
+        model_arg = f"openrouter/{model}" if "/" not in model else model
+
+        # Environment variables
+        nomount = os.environ.get("NOMOUNT", "0") == "1"
+        force_yes = os.environ.get("FORCE_YES", "0") == "1"
+
+        # Volume mount
+        volume_arg = [] if nomount else ["--volume", f"{os.getcwd()}:/app"]
+
+        # yes flag
+        yes_arg = ["--yes-always"] if force_yes else []
+
+        # .env file
+        env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+        env_file_arg = ["--env-file", os.path.abspath(env_file)] if os.path.exists(env_file) else []
+
+        # docker run command
+        docker_cmd = [
+            "docker", "run", "--rm", "-it",
+            *env_file_arg,
+            *volume_arg,
+            "--workdir=/app",
+            "myder",
+            "--analytics-disable",
+            *yes_arg,
+            "--model", model_arg
+        ]
+
+        # Execute
+        subprocess.run(docker_cmd)
     else:
         parser.print_help()
 
