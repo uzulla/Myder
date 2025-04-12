@@ -15,8 +15,8 @@ def main():
 
     if args.command == "run":
         # Model name
-        model = args.model if args.model else "google/gemini-2.5-pro-exp-03-25:free"
-        model_arg = f"openrouter/{model}" if "/" not in model else model
+        model = args.model if args.model else "openrouter/google/gemini-2.5-pro-exp-03-25:free"
+        model_arg = model
 
         # Environment variables
         nomount = os.environ.get("NOMOUNT", "0") == "1"
