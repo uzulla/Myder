@@ -1,35 +1,100 @@
 # Myder
 
-Myder（マイダー）は、[Aider](https://aider.chat/)をDocker環境で実行し、[OpenRouter](https://openrouter.ai/)経由で様々なAIモデルと対話するためのラッパーツールです。
+**[重要] Makefileは廃止され、Python CLI（bin/myder）での利用に移行しました。**
 
-Dockerを用いることでセットアップを容易にし、実行時にAiderが参照出来るファイルを実行時ディレクトリに限定もできます。
+---
 
-また、OpenRouterが提供するModelの指定も楽にできます。
+## ディレクトリ構成
 
-## 用意する前提条件
-
-- Docker
-- OpenRouterのAPIキー ([ここで生成できます](https://openrouter.ai/settings/keys))
-
-### Linuxの場合
-
-Bind mountする都合上、以下指定を追加したほうがよいかもしれません
-
-```makefile
---user $(shell id -u):$(shell id -g)
+```
+bin/
+  myder            # CLI実行ファイル（Shebang付、直接実行可能）
+src/
+  myder_core.py    # コアロジック
+  provider/        # Provider追加用ディレクトリ
+    __init__.py
+    sample_provider.py
+tests/
+  test_myder_core.py # pytest形式テスト
 ```
 
-## セットアップ
+---
+
+## インストール・セットアップ
 
 1. このリポジトリをクローンします：
-   ```shell
+
+   ```bash
    git clone https://github.com/uzulla/myder.git
    cd myder
    ```
 
-2. Dockerイメージをビルドします：
-   ```shell
-   make build
+2. 依存パッケージは不要です（標準ライブラリのみで動作）。
+
+3. `bin/myder` に実行権限がない場合は付与してください：
+
+   ```bash
+   chmod +x bin/myder
+   ```
+
+4. `bin/` ディレクトリをPATHに追加するか、`bin/myder` を直接実行してください。
+
+---
+
+## 使い方
+
+### 基本コマンド
+
+```bash
+bin/myder help
+bin/myder build
+bin/myder run --provider sample_provider --model <モデル名>
+```
+
+- Providerは `src/provider/` ディレクトリにPythonファイルを追加することで拡張できます。
+- `bin/myder help` で利用可能なProvider一覧が表示されます。
+
+### Providerの追加方法
+
+1. `src/provider/` 配下に新しいPythonファイル（例: `my_provider.py`）を作成し、`Provider` クラスを実装してください。
+
+   ```python
+   # src/provider/my_provider.py
+   class Provider:
+       def run(self, model=None):
+           # ここに処理を記述
+           pass
+   ```
+
+2. `bin/myder run --provider my_provider` で実行できます。
+
+---
+
+## テスト
+
+pytestでユニットテストを実行できます。
+
+```bash
+pytest
+```
+
+---
+
+## Dockerビルド
+
+Dockerイメージをビルドする場合は、以下を実行してください。
+
+```bash
+bin/myder build
+```
+
+---
+
+## 注意事項
+
+- Makefileやmyder.pyは廃止されました。今後は `bin/myder` をご利用ください。
+- 標準ライブラリのみで動作します。
+- Providerの追加・拡張が容易な構造です。
    ```
 > Q: なぜ、ビルドしているのか？
 > A: Aiderの公式コンテナはツールが足りない(curlすらない)のでつらいからです。そしてphpがあるのは作者の趣味です。
