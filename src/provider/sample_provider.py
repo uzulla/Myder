@@ -1,3 +1,3 @@
 class Provider:
     def run(self, model=None):
-        print(f"SampleProvider: running with model={model}")
+        return f"SampleProvider: running with model={model}"
