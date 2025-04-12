@@ -1,5 +1,26 @@
 # Myder
 
+**[重要] 今後はMakefile依存を廃止し、Python CLI（myder.py）での利用を推奨します。Makefileは廃止予定です。**
+
+---
+
+## Python CLIによる実行方法（推奨）
+
+1. 依存パッケージが必要な場合はインストールしてください（例: `pip install -r requirements.txt` など）。
+2. myder.pyを使ってコマンドを実行できます。
+
+例:
+```bash
+python myder.py help
+python myder.py build
+python myder.py run --provider sample_provider --model <モデル名>
+```
+
+- Providerは `provider/` ディレクトリにPythonファイルを追加することで拡張できます。
+- `python myder.py help` で利用可能なProvider一覧が表示されます。
+
+---
+
 Myder（マイダー）は、[Aider](https://aider.chat/)をDocker環境で実行し、[OpenRouter](https://openrouter.ai/)経由で様々なAIモデルと対話するためのラッパーツールです。
 
 Dockerを用いることでセットアップを容易にし、実行時にAiderが参照出来るファイルを実行時ディレクトリに限定もできます。
