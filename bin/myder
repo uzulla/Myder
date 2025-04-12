@@ -5,6 +5,26 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 from myder_core import list_providers, run_provider, build_docker, DEFAULT_PROVIDER, DEFAULT_MODEL
 
+def load_dotenv(dotenv_path=".env"):
+    try:
+        with open(dotenv_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k, v = k.strip(), v.strip().strip('"').strip("'")
+                if k not in os.environ:
+                    os.environ[k] = v
+    except FileNotFoundError:
+        pass
+
+def get_api_key(provider, cli_api_key=None):
+    if cli_api_key:
+        return cli_api_key
+    env_key = f"{provider.upper()}_API_KEY"
+    return os.environ.get(env_key)
+
 def main():
     parser = argparse.ArgumentParser(description="Myder Python CLI")
     subparsers = parser.add_subparsers(dest="command")
@@ -14,6 +34,7 @@ def main():
     parser_run = subparsers.add_parser("run", help="Run with provider")
     parser_run.add_argument("--model", type=str, help="Model name")
     parser_run.add_argument("--provider", type=str, help="Provider name")
+    parser_run.add_argument("--api-key", type=str, help="API Key (overrides env/.env)")
 
     args = parser.parse_args()
 
@@ -25,7 +46,13 @@ def main():
     elif args.command == "run":
         provider = args.provider if args.provider else DEFAULT_PROVIDER
         model = args.model if args.model else DEFAULT_MODEL
-        run_provider(provider, model=model)
+        load_dotenv()
+        api_key = get_api_key(provider, args.api_key)
+        if not api_key:
+            print(f"API Key not found for provider '{provider}'.\n"
+                  f"Set {provider.upper()}_API_KEY in environment or .env, or use --api-key.")
+            sys.exit(1)
+        run_provider(provider, api_key, model=model)
     else:
         parser.print_help()
 
