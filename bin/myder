@@ -23,6 +23,13 @@ def main():
     run_parser.add_argument("--nomount", action="store_true", help="Do not mount current directory to /app in container (overrides NOMOUNT env)")
     run_parser.add_argument("--force-yes", action="store_true", help="Add --yes-always flag to myder in container (overrides FORCE_YES env)")
 
+    # Add build command
+    build_parser = subparsers.add_parser(
+        "build",
+        help="Build Docker image locally",
+        description="Build Docker image locally with tag 'myder'"
+    )
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -56,6 +63,18 @@ def main():
             "--model", model_arg
         ]
 
+        # Execute
+        subprocess.run(docker_cmd)
+    elif args.command == "build":
+        # Get the root directory of the project
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Change to the root directory
+        os.chdir(root_dir)
+        
+        # Build the Docker image
+        docker_cmd = ["docker", "build", "-t", "myder", "."]
+        
         # Execute
         subprocess.run(docker_cmd)
     else:
