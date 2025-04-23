@@ -27,7 +27,7 @@ def main():
     build_parser = subparsers.add_parser(
         "build",
         help="Build Docker image locally",
-        description="Build Docker image locally with tag 'myder'"
+        description="Build Docker image locally with tag 'myder' (always pulls the latest base image)"
     )
 
     args = parser.parse_args()
@@ -72,8 +72,8 @@ def main():
         # Change to the root directory
         os.chdir(root_dir)
         
-        # Build the Docker image
-        docker_cmd = ["docker", "build", "-t", "myder", "."]
+        # Build the Docker image with --pull to always get the latest base image
+        docker_cmd = ["docker", "build", "--pull", "-t", "myder", "."]
         
         # Execute
         subprocess.run(docker_cmd)
